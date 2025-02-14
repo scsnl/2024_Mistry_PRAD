@@ -1,0 +1,82 @@
+model {
+
+# PRAD model
+# Cite:
+# Mistry, P. K., Warren, S., Branigan, N. K., Cai, W., & Menon, V. (2024). Computational Modeling of Proactive, Reactive, and Attentional Dynamics in Cognitive Control. bioRxiv, 2024-10.
+# Mistry, P. K., Branigan, N. K., Gao, Z., Cai, W., & Menon, V. (2024). Nonergodicity and Simpson’s paradox in neurocognitive dynamics of cognitive control. bioRxiv, 2024-07.
+
+#--------- (A) Define the 'Go' Process (lines 3 to 36) -----------#
+
+    #--- Priors (lines 6 - 14) ---#
+    deltaG    ~ dunif(0.0001,12)             
+    alphaG[1] ~ dunif(0.5,4)                 
+    alphaG[2] ~ dunif(0.5,4)                 
+    betaG     ~ dbeta(1,1) T(0.0001,0.9999)  
+    xMin      ~ dunif(0.0001,min(0.1,minT))  
+    kappa0    ~ dnorm(0.1,0.3) T(0,0.3)    
+    theta1    ~ dnorm(0,0.3)                                       
+    mu        ~ dbeta(0.5,0.5) T(0.8,0.9999) 
+    theta0    ~ dnorm(0,0.3)                 
+
+    #---Go model (line 17 - 36) ---#
+    for (rr in 1:2) {       #--rr = run 1 and 2. All parameters held constant across both runs.  
+        #--For trial 1 
+        for (t in 1:1)  {                        
+            sd[t,rr]      ~ dbern(0.001 + 0.999*ilogit(theta0)) 
+            tauG[t,rr]    <- 0
+            goProc[t,rr]  ~ dwiener(alphaG[1],tau[t,rr],betaG,delta[t,rr]) 
+        }
+        #--For all subsequent trials > 1
+        for (t in 2:NN) {  
+            sd[t,rr]      ~ dbern(0.001 + 0.999*ilogit(theta1*equals(tr[t-1,rr],2) - theta1*equals(tr[t-1,rr],3) + theta0)) 
+            tauG[t,rr]    <- max(0.0001,((ssdM[1:(t-1),rr])%*%((mu^((t-1)-(1:(t-1))))/(0.00000001 + (ssdmarks[1:(t-1),rr]%*%(mu^((t-1)-(1:(t-1)))))))))
+            goProc[t,rr]  ~ dwiener(alphaG[1+LRerr[t-1,rr]],tau[t,rr],betaG,delta[t,rr]) 
+        }
+        #--For all trials
+        for (t in 1:NN) {
+            delta[t,rr]   <- deltaG*stimLR[t,rr]*ifelse(equals(dur[t,rr],0),0,ilogit(12*(dur[t,rr]-kappa0))) 
+            tau[t,rr]     <- xMin+tauG[t,rr]*sd[t,rr]  
+            ones[t,rr]    ~ dinterval(equals(tr[t,rr],1)*maxtime+equals(tr[t,rr],2)*ifelse(stProc[t,rr]>=0,min(maxtime,stProc[t,rr]),maxtime)+equals(tr[t,rr],3)*abs(goProc[t,rr])+equals(tr[t,rr],4)*abs(goProc[t,rr]),equals(tr[t,rr],1)*abs(goProc[t,rr])+equals(tr[t,rr],2)*abs(goProc[t,rr])+equals(tr[t,rr],3)*maxtime+equals(tr[t,rr],4)*ifelse(stProc[t,rr]>=0,min(maxtime,stProc[t,rr]),maxtime))
+        }
+    }
+
+#--------- (B) Define the 'Stop' Process (lines 38 to 59) -----------#
+
+    #---Priors (line 41 - 46) --- #
+    pp     ~ dunif(4,24)        
+    alphaS ~ dunif(0.5,6)       
+    deltaS <- pp/alphaS         
+    gamma1 ~ dnorm(0,0.3)       
+    gamma0 ~ dunif(0,12)        
+    sMin   ~ dunif(0.0001,xMin) 
+    
+    #---Stop model (line 49 - 59) --- #
+    for (rr in 1:2) {
+        for (t in 1:1)  {
+            betaS[t,rr] ~ dbeta(1,1) T(0.01,0.99) 
+        }
+        for (t in 2:NN) {
+            betaS[t,rr] <- ilogit(gamma1*(lcnt[t,rr]-gamma0))  
+        }
+        for (t in 1:NN) {
+            stProc[t,rr]  ~ dwiener(alphaS,sMin+ssdT[t,rr],betaS[t,rr],deltaS) 
+        }
+    }
+
+#--------- (C) Generate posterior predictives (lines 61 to 75) -----------#
+    
+    #------Generates new data using inferred model parameters to check descriptive adequacy of the model
+    for (rr in 1:2) {
+        for (t in 1:1) {
+            pgoProc[t,rr]  ~ dwiener(alphaG[1],tau[t,rr], betaG,delta[t,rr]) 
+        }
+        for (t in 2:NN) {
+            pgoProc[t,rr]  ~ dwiener(alphaG[1+LRerr[t-1,rr]],tau[t,rr],betaG,delta[t,rr]) 
+        }
+        for (t in 1:NN) {
+            pstProc[t,rr]  ~ dwiener(alphaS,sMin+ssdT[t,rr],betaS[t,rr],deltaS) 
+            pones[t,rr]    ~ dinterval(equals(tr[t,rr],1)*maxtime+equals(tr[t,rr],2)*ifelse(pstProc[t,rr]>=0,min(maxtime,pstProc[t,rr]),maxtime)+equals(tr[t,rr],3)*abs(pgoProc[t,rr])+equals(tr[t,rr],4)*abs(pgoProc[t,rr]),equals(tr[t,rr],1)*abs(pgoProc[t,rr])+equals(tr[t,rr],2)*abs(pgoProc[t,rr])+equals(tr[t,rr],3)*maxtime+equals(tr[t,rr],4)*ifelse(pstProc[t,rr]>=0,min(maxtime,pstProc[t,rr]),maxtime))
+        }
+    }
+
+}

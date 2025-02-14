@@ -1,0 +1,32 @@
+﻿Data Dictionary - PRAD,Type,Level,Description
+alphaG[1],Model parameter,Individual,Decision threshold of go process after a correct choice
+alphaG[2],Model parameter,Individual,Decision threshold of go process after a choice error
+alphaS,Model parameter,Individual,Fixed decision threshold of stop process
+betaG,Model parameter,Individual,Initial left-right bias of the go process
+deltaG,Model parameter,Individual,Fixed component of go process drift rate
+deltaS,Model parameter,Individual,Fixed drift rate of stop process
+gamma0 ,Model parameter,Individual,Attention length; determines shape (inflexion point) of how stopping expectancy varies with the number of trials since  last stop singal encountered
+gamma1,Model parameter,Individual,"Attention-based adaptivity: Determines whether attention and hence stopping expectancy increase or decrease, and to what extent, as number of trials since last stop singal encountered increases"
+kappa0,Model parameter,Individual,Duration sensitivity of go drift rate; determines the inflexion point of the curve for how go-stimilus duration influences go-drift rate
+mu,Model parameter,Individual,"Belief updating persisitence; determines effective decay rate for latent tracking of the experienced SSD (determines how tracked SSD ranges between ""mean experienced"" to ""last experienced"" SSD)"
+pp,Model parameter,Individual,Intermediate transformation variable
+sMin,Model parameter,Individual,Fixed non-decision time for the stop process (< non-decision time of go process)
+theta0,Model parameter,Individual,Proclivity for proactive state; Inverse logit of theta0 gives the the base-rate probability of proactive state
+theta1,Model parameter,Individual,"Error modulation of cognitive state (sensitivity to stop-failure trial): Values and sign determine shift in cognitive state towards or away from proactivity, after stop-failures and go-omissions"
+xMin,Model parameter,Individual,Fixed component of non-decision time for go process (total non-decision time on any trial includes the proactive delay added to this)
+betaS,Model parameter,Trial level,Trial level modulation of stopping expectancy (stopping bias); depends on gamma1 and gamma0
+delta,Model parameter,Trial level,Go process drift rate on a particular trial; Depends on deltaG and kappa0
+sd,Model parameter,Trial level,"Latent indicator variable for each trial: 1  - proactive state active; 0  = proactive state not active.  Drawn from a Bernoulli distribution with parameters based on theta0, theta1, and past errors"
+stProc,Model parameter,Trial level,Latent variable representing the SSRT + SSD time on stop trials
+tau,Model parameter,Trial level,"Go process non-decision time on a particular trial, computed as a sum of fixed non-decision time component xMin and  proactive delay tauG on proactive trials (when sd = 1)"
+tauG,Model parameter,Trial level,"Latent variable for noisy tracking of SSD, changes from trial to trial based on history of SSD, and decay rate mu"
+maxtime,Observed value,Individual,Experimental design: Window of maximum trial time
+minT,Observed value,Individual,Shortest uncensored RT observed
+dur,Observed value,Trial level,Stimulus presentation duration
+goProc,Observed value,Trial level,Choice coded go RT
+lcnt,Observed value,Trial level,Number of trials since the last stop trial
+Lrerr,Observed value,Trial level,Indicator variable on whether a choice (left vs right) error was made in responding to the go stimulus
+ones,Observed value,Trial level,"Array of 1s, used to contribute towards the model likelihood, by mapping the go and stop times and likelihood of trial being a hit or miss vs actual data"
+ssdT,Observed value,Trial level,SSD (experimental observation)
+stimLR,Observed value,Trial level,Stimulus direction
+tr,Observed value,Trial level,Indicator variable for observed trial type (correct go / correct stop / 2 = stop failure / 3 = go-omission) 
