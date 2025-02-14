@@ -1,5 +1,10 @@
 model {
 
+# FSM model
+# Cite:
+# Mistry, P. K., Warren, S., Branigan, N. K., Cai, W., & Menon, V. (2024). Computational Modeling of Proactive, Reactive, and Attentional Dynamics in Cognitive Control. bioRxiv, 2024-10.
+# Mistry, P. K., Branigan, N. K., Gao, Z., Cai, W., & Menon, V. (2024). Nonergodicity and Simpson’s paradox in neurocognitive dynamics of cognitive control. bioRxiv, 2024-07.
+
 #--------- Go Process -----------#
     deltaG    ~ dunif(0.0001,12) 
     alphaG[1] ~ dunif(0.5,4) 
