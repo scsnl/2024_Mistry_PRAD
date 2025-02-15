@@ -57,6 +57,8 @@ model {
         }
         for (t in 2:NN) {
             betaS[t,rr] <- ilogit(gamma1*(lcnt[t,rr]-gamma0))  
+              # Replace with below in case of error (e.g. slicer stuck at infinite density)
+              # betaS[t,rr] <- 0.01 + 0.98*( ilogit(gamma1*(lcnt[t,rr]-gamma0)) )  
         }
         for (t in 1:NN) {
             stProc[t,rr]  ~ dwiener(alphaS,sMin+ssdT[t,rr],betaS[t,rr],deltaS) 
