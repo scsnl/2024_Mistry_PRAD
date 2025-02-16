@@ -1,6 +1,6 @@
 # 2024_Mistry_PRAD
 
-JAGS model code for the models using in the following papers.
+JAGS model code for the models used in the following papers.
 
 Mistry, P. K., Warren, S., Branigan, N. K., Cai, W., & Menon, V. (2024). Computational Modeling of Proactive, Reactive, and Attentional Dynamics in Cognitive Control. bioRxiv, 2024-10.
 
